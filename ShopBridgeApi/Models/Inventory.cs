@@ -11,13 +11,14 @@ namespace ShopBridgeApi.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
+
     public partial class Inventory
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public Nullable<decimal> Price { get; set; }
-        public bool Image { get; set; }
+        public string Image { get; set; }
     }
 }

@@ -15,19 +15,27 @@ namespace ShopBridge.Api.Controllers
         [HttpPost, ActionName("Add")]
         public HttpResponseMessage CreateInventory(Inventory inventory)
         {
-            HttpResponseMessage result;
-            if (ModelState.IsValid)
+            HttpResponseMessage result=null;
+            try
             {
-                using (ShopBridgeEntities db = new ShopBridgeEntities())
+                
+                if (ModelState.IsValid)
                 {
-                    db.Inventories.Add(inventory);
-                    db.SaveChanges();
+                    using (ShopBridgeEntities db = new ShopBridgeEntities())
+                    {
+                        db.Inventories.Add(inventory);
+                        db.SaveChanges();
+                    }
+                    result = Request.CreateResponse(HttpStatusCode.Created, inventory);
                 }
-                result = Request.CreateResponse(HttpStatusCode.Created, inventory);
+                else
+                {
+                    result = Request.CreateResponse(HttpStatusCode.BadRequest, "Server failed to save data");
+                }
             }
-            else
+            catch (Exception e)
             {
-                result = Request.CreateResponse(HttpStatusCode.BadRequest, "Server failed to save data");
+
             }
             return result;
         }
@@ -36,33 +44,47 @@ namespace ShopBridge.Api.Controllers
 
         public HttpResponseMessage GetInventoryList()
         {
-            HttpResponseMessage result;
-            List<Inventory> lstinventorie = new List<Inventory>();
-
-            using (ShopBridgeEntities db = new ShopBridgeEntities())
+            HttpResponseMessage result=null;
+            try
             {
-                lstinventorie = db.Inventories.ToList();
-            }
-            result = Request.CreateResponse(HttpStatusCode.OK, lstinventorie);
+                List<Inventory> lstinventorie = new List<Inventory>();
 
+                using (ShopBridgeEntities db = new ShopBridgeEntities())
+                {
+                    lstinventorie = db.Inventories.ToList();
+                }
+                result = Request.CreateResponse(HttpStatusCode.OK, lstinventorie);
+            }
+            catch(Exception e)
+            {
+
+            }
 
             return result;
         }
+
 
         [ActionName("Remove")]
         public HttpResponseMessage RemoveInventory(int ? Id)
         {
             int id = Convert.ToInt32(Id);
-            if (Id <= 0)
+            try
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest);
-            }
+                if (Id <= 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest);
+                }
 
-            using (ShopBridgeEntities db = new ShopBridgeEntities())
+                using (ShopBridgeEntities db = new ShopBridgeEntities())
+                {
+                    var Inventory = db.Inventories.SingleOrDefault(m => m.Id.Equals(id));
+                    db.Inventories.Remove(Inventory);
+                    db.SaveChanges();
+
+                }
+            }
+            catch(Exception e)
             {
-                var Inventory = db.Inventories.SingleOrDefault(m => m.Id.Equals(id));
-                db.Inventories.Remove(Inventory);
-                db.SaveChanges();
 
             }
             return Request.CreateResponse(HttpStatusCode.OK,id);
@@ -74,17 +96,23 @@ namespace ShopBridge.Api.Controllers
             Inventory inventory = null;
             int Id = Convert.ToInt32(id);
 
-            using (ShopBridgeEntities db = new ShopBridgeEntities())
+            try
+            {
+                using (ShopBridgeEntities db = new ShopBridgeEntities())
+                {
+
+                    inventory = db.Inventories.SingleOrDefault(m => m.Id.Equals(Id));
+                }
+
+                if (inventory == null)
+                {
+                    return NotFound();
+                }
+            }
+            catch(Exception e)
             {
 
-                inventory = db.Inventories.SingleOrDefault(m => m.Id.Equals(Id));
             }
-
-            if (inventory == null)
-            {
-                return NotFound();
-            }
-
             return Ok(inventory);
         }
     }
